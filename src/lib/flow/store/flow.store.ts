@@ -9,6 +9,7 @@ import type {
     FlowNodeData,
     FlowHandleDefinition,
     FlowHandleType,
+    FlowStateSnapshot,
 } from '../types/flow.types';
 
 interface FlowState {
@@ -28,6 +29,7 @@ interface FlowState {
     removeEdge: (id: string) => void;
 
     setViewport: (viewport: FlowViewport) => void;
+    replaceFlow: (snapshot: FlowStateSnapshot) => void;
 
     connection: FlowConnection | null;
 
@@ -165,6 +167,25 @@ export const useFlowStore = create<FlowState>((set) => ({
 
     setViewport: (viewport) =>
         set({ viewport }),
+
+    replaceFlow: ({ nodes, edges, viewport }) =>
+        set((state) => {
+            const nodeIds = new Set(nodes.map((node) => node.id));
+            const handles = Object.fromEntries(
+                Object.entries(state.handles).filter(([, handle]) =>
+                    nodeIds.has(handle.nodeId),
+                ),
+            );
+
+            return {
+                nodes: [...nodes],
+                edges: [...edges],
+                viewport: { ...viewport },
+                connection: null,
+                selectedNodeId: null,
+                handles,
+            };
+        }),
 
     // CONEXIÓN TEMPORAL
 

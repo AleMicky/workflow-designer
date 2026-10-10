@@ -554,7 +554,7 @@
   backdrop-filter: blur(12px);
 }
 
-.miky-flow-header > div {
+.miky-flow-header__identity {
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -565,7 +565,7 @@
   font-size: 17px;
 }
 
-.miky-flow-header > div span {
+.miky-flow-header__identity span {
   color: #64748b;
   font-size: 12px;
 }
@@ -577,6 +577,29 @@
   color: #2563eb;
   font-size: 11px;
   font-weight: 700;
+}
+
+.miky-flow-header__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.miky-flow-header__validation {
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.miky-flow-header__validation--valid {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.miky-flow-header__validation--invalid {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 /* ========================================

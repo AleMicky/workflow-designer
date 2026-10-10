@@ -28,7 +28,9 @@ export interface FlowNode<T = Record<string, unknown>> {
     selected?: boolean;
 }
 
-export interface FlowEdge {
+export interface FlowEdge<
+    TData extends Record<string, unknown> = Record<string, unknown>,
+> {
     id: string;
 
     source: string;
@@ -40,12 +42,19 @@ export interface FlowEdge {
     type?: 'straight' | 'bezier' | 'step';
 
     label?: string;
+    data?: TData;
 }
 
 export interface FlowViewport {
     x: number;
     y: number;
     zoom: number;
+}
+
+export interface FlowStateSnapshot {
+    nodes: FlowNode[];
+    edges: FlowEdge[];
+    viewport: FlowViewport;
 }
 
 export interface FlowDefinition {

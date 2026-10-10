@@ -26,12 +26,32 @@ export {
 
 export { createBpmnNodeTypes } from './bpmn/createBpmnNodeTypes';
 
+export {
+    createBpmnDocumentFromFlow,
+    createFlowSnapshotFromBpmnDocument,
+} from './bpmn/model/bpmn-document.adapter';
+
+export { BPMN_DOCUMENT_SCHEMA_VERSION } from './bpmn/model/bpmn-document.types';
+
+export {
+    BpmnSerializationError,
+    parseBpmnDocument,
+    serializeBpmnDocument,
+} from './bpmn/serialization/bpmn-json';
+
+export {
+    BpmnValidator,
+    createStandardBpmnValidator,
+    standardBpmnValidationRules,
+} from './bpmn/validation';
+
 export type {
     FlowNode as FlowNodeType,
     FlowEdge as FlowEdgeType,
     FlowDefinition,
     FlowViewport,
     FlowPosition,
+    FlowStateSnapshot,
 } from './types/flow.types';
 
 export type {
@@ -45,5 +65,31 @@ export type {
     BpmnPropertyOption,
     CreateBpmnNodeOptions,
 } from './bpmn/types/bpmn-element.types';
+
+export type {
+    BpmnDocument,
+    BpmnDocumentV1,
+    BpmnDiagramModel,
+    BpmnEdgeDiagram,
+    BpmnEditorState,
+    BpmnElementInstance,
+    BpmnProcessModel,
+    BpmnSequenceFlow,
+    BpmnSequenceFlowData,
+    BpmnShape,
+} from './bpmn/model/bpmn-document.types';
+
+export type {
+    BpmnFlowSnapshot,
+    CreateBpmnDocumentOptions,
+} from './bpmn/model/bpmn-document.adapter';
+
+export type {
+    BpmnValidationContext,
+    BpmnValidationIssue,
+    BpmnValidationReport,
+    BpmnValidationRule,
+    BpmnValidationSeverity,
+} from './bpmn/validation';
 
 import './styles/flow.css';

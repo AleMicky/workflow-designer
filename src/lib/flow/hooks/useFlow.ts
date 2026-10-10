@@ -15,6 +15,7 @@ export function useFlow() {
     const removeNode = useFlowStore((state) => state.removeNode);
     const removeEdge = useFlowStore((state) => state.removeEdge);
     const setViewport = useFlowStore((state) => state.setViewport);
+    const replaceFlow = useFlowStore((state) => state.replaceFlow);
 
     return {
         nodes,
@@ -27,5 +28,6 @@ export function useFlow() {
         removeNode,
         removeEdge,
         setViewport,
+        replaceFlow,
     };
 }

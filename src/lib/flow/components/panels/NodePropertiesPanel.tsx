@@ -1,7 +1,37 @@
+import type { BpmnElementRegistry } from '../../bpmn/registry/BpmnElementRegistry';
+import type { BpmnPropertyDefinition } from '../../bpmn/types/bpmn-element.types';
 import { useFlowStore } from '../../store/flow.store';
 import type { FlowNodeData } from '../../types/flow.types';
 
-export function NodePropertiesPanel() {
+interface NodePropertiesPanelProps {
+    registry?: BpmnElementRegistry;
+}
+
+const fallbackProperties = [
+    {
+        key: 'label',
+        label: 'Nombre',
+        control: 'text',
+    },
+    {
+        key: 'code',
+        label: 'Código',
+        control: 'text',
+    },
+    {
+        key: 'description',
+        label: 'Descripción',
+        control: 'textarea',
+    },
+] as const satisfies readonly BpmnPropertyDefinition[];
+
+function getInputValue(value: unknown): string | number {
+    return typeof value === 'string' || typeof value === 'number'
+        ? value
+        : '';
+}
+
+export function NodePropertiesPanel({ registry }: NodePropertiesPanelProps) {
     const selectedNodeId = useFlowStore(
         (state) => state.selectedNodeId,
     );
@@ -28,20 +58,109 @@ export function NodePropertiesPanel() {
         );
     }
 
-    const data = node.data as unknown as FlowNodeData;
+    const data = node.data as FlowNodeData;
+    const definition = registry?.get(node.type);
+    const properties = definition?.properties ?? fallbackProperties;
 
-    const update = (changes: Partial<FlowNodeData>) => {
-        updateNodeData(node.id, changes);
+    const update = (key: string, value: unknown) => {
+        updateNodeData(node.id, { [key]: value });
     };
 
-    const isApproval = node.type === 'approval';
+    const renderProperty = (property: BpmnPropertyDefinition) => {
+        const inputId = `node-property-${property.key}`;
+        const value = data[property.key];
+
+        if (property.control === 'checkbox') {
+            return (
+                <label key={property.key} className="flow-checkbox">
+                    <input
+                        id={inputId}
+                        type="checkbox"
+                        checked={Boolean(value)}
+                        onChange={(event) =>
+                            update(property.key, event.target.checked)
+                        }
+                    />
+                    <span>{property.label}</span>
+                </label>
+            );
+        }
+
+        if (property.control === 'textarea') {
+            return (
+                <div key={property.key} className="flow-field">
+                    <label htmlFor={inputId}>{property.label}</label>
+                    <textarea
+                        id={inputId}
+                        rows={4}
+                        required={property.required}
+                        placeholder={property.placeholder}
+                        value={getInputValue(value)}
+                        onChange={(event) =>
+                            update(property.key, event.target.value)
+                        }
+                    />
+                </div>
+            );
+        }
+
+        if (property.control === 'select') {
+            return (
+                <div key={property.key} className="flow-field">
+                    <label htmlFor={inputId}>{property.label}</label>
+                    <select
+                        id={inputId}
+                        required={property.required}
+                        value={getInputValue(value)}
+                        onChange={(event) =>
+                            update(property.key, event.target.value)
+                        }
+                    >
+                        <option value="">Seleccionar…</option>
+                        {property.options?.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+            );
+        }
+
+        return (
+            <div key={property.key} className="flow-field">
+                <label htmlFor={inputId}>{property.label}</label>
+                <input
+                    id={inputId}
+                    type={property.control === 'number' ? 'number' : 'text'}
+                    min={property.min}
+                    required={property.required}
+                    placeholder={property.placeholder}
+                    value={getInputValue(value)}
+                    onChange={(event) => {
+                        if (property.control !== 'number') {
+                            update(property.key, event.target.value);
+                            return;
+                        }
+
+                        update(
+                            property.key,
+                            event.target.value === ''
+                                ? undefined
+                                : Number(event.target.value),
+                        );
+                    }}
+                />
+            </div>
+        );
+    };
 
     return (
         <aside className="flow-properties">
             <div className="flow-properties__header">
                 <div>
                     <h3>Propiedades</h3>
-                    <span>{node.type}</span>
+                    <span>{definition?.label ?? node.type}</span>
                 </div>
 
                 <button
@@ -54,108 +173,18 @@ export function NodePropertiesPanel() {
             </div>
 
             <div className="flow-properties__body">
-                <div className="flow-field">
-                    <label htmlFor="node-label">Nombre</label>
-                    <input
-                        id="node-label"
-                        value={data.label ?? ''}
-                        onChange={(event) =>
-                            update({ label: event.target.value })
-                        }
-                    />
-                </div>
-
-                <div className="flow-field">
-                    <label htmlFor="node-code">Código</label>
-                    <input
-                        id="node-code"
-                        value={data.code ?? ''}
-                        placeholder="APROBACION_JEFE"
-                        onChange={(event) =>
-                            update({ code: event.target.value })
-                        }
-                    />
-                </div>
-
-                <div className="flow-field">
-                    <label htmlFor="node-description">Descripción</label>
-                    <textarea
-                        id="node-description"
-                        rows={3}
-                        value={data.description ?? ''}
-                        onChange={(event) =>
-                            update({ description: event.target.value })
-                        }
-                    />
-                </div>
-
-                {(node.type === 'task' || isApproval) && (
-                    <div className="flow-field">
-                        <label htmlFor="node-assignee">Responsable</label>
-                        <input
-                            id="node-assignee"
-                            value={data.assignee ?? ''}
-                            placeholder="JEFE_UNIDAD"
-                            onChange={(event) =>
-                                update({ assignee: event.target.value })
-                            }
-                        />
-                    </div>
-                )}
-
-                {isApproval && (
-                    <>
-                        <h4>Configuración de aprobación</h4>
-
-                        <div className="flow-checkboxes">
-                            {(
-                                [
-                                    ['allowApprove', 'Permitir aprobar'],
-                                    ['allowReject', 'Permitir rechazar'],
-                                    ['allowObserve', 'Permitir observar'],
-                                    ['requireComment', 'Requiere comentario'],
-                                ] as const
-                            ).map(([key, label]) => (
-                                <label key={key} className="flow-checkbox">
-                                    <input
-                                        type="checkbox"
-                                        checked={data[key] ?? false}
-                                        onChange={(event) =>
-                                            update({ [key]: event.target.checked })
-                                        }
-                                    />
-                                    <span>{label}</span>
-                                </label>
-                            ))}
-                        </div>
-
-                        <div className="flow-field">
-                            <label htmlFor="node-timeout">
-                                Tiempo máximo (horas)
-                            </label>
-                            <input
-                                id="node-timeout"
-                                type="number"
-                                min={0}
-                                value={data.timeoutHours ?? ''}
-                                onChange={(event) => {
-                                    const value = event.target.value;
-
-                                    update({
-                                        timeoutHours:
-                                            value === ''
-                                                ? undefined
-                                                : Math.max(0, Number(value)),
-                                    });
-                                }}
-                            />
-                        </div>
-                    </>
-                )}
+                {properties.map(renderProperty)}
 
                 <div className="flow-properties__info">
                     <strong>ID del nodo</strong>
                     <code>{node.id}</code>
+
+                    {definition && (
+                        <>
+                            <strong>Tipo BPMN</strong>
+                            <code>{definition.bpmnType}</code>
+                        </>
+                    )}
                 </div>
             </div>
         </aside>

@@ -1,75 +1,60 @@
-# React + TypeScript + Vite
+# Miky Flow
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Editor visual de procesos construido con React 19, TypeScript y Zustand. El
+canvas es independiente del catálogo BPMN: los elementos disponibles, sus
+handles y sus propiedades provienen de un registro extensible.
 
-Currently, two official plugins are available:
+## Desarrollo
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+bun install
+bun run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Validación completa:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+bun run build
+bun run lint
 ```
+
+## Registro BPMN
+
+Las definiciones estándar viven en `src/lib/flow/bpmn/definitions`. La paleta,
+el renderizador de nodos y el panel de propiedades leen el mismo registro, por
+lo que añadir un elemento no requiere agregar condiciones en `FlowCanvas`.
+
+Una aplicación puede extender el catálogo antes de construir sus tipos de nodo:
+
+```ts
+import {
+    createBpmnNodeTypes,
+    createStandardBpmnRegistry,
+} from './lib/flow';
+
+const registry = createStandardBpmnRegistry();
+
+registry.register({
+    type: 'customTask',
+    bpmnType: 'bpmn:task',
+    category: 'activities',
+    label: 'Tarea personalizada',
+    description: 'Ejemplo de extensión definida por la aplicación.',
+    icon: '◆',
+    color: '#0f766e',
+    handles: [
+        { id: 'input', type: 'target', position: 'left' },
+        { id: 'output', type: 'source', position: 'right' },
+    ],
+    properties: [
+        { key: 'label', label: 'Nombre', control: 'text' },
+    ],
+    defaultData: { label: 'Tarea personalizada' },
+});
+
+const nodeTypes = createBpmnNodeTypes(registry);
+```
+
+Las decisiones de negocio y las etiquetas de las salidas se declaran en la
+aplicación mediante `label`; el núcleo no interpreta identificadores como
+`approved`, `rejected` o cualquier otro valor particular de un proceso.

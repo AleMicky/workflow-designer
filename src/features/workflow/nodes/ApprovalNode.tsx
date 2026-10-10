@@ -31,6 +31,7 @@ export function ApprovalNode({
                 id="approved"
                 type="source"
                 position="right"
+                label="Aprobado"
                 color="#10b981"
                 style={{ top: '25%' }}
             />
@@ -40,6 +41,7 @@ export function ApprovalNode({
                 id="rejected"
                 type="source"
                 position="right"
+                label="Rechazado"
                 color="#ef4444"
                 style={{ top: '50%' }}
             />
@@ -49,6 +51,7 @@ export function ApprovalNode({
                 id="observed"
                 type="source"
                 position="right"
+                label="Observado"
                 color="#f59e0b"
                 style={{ top: '75%' }}
             />

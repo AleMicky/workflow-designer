@@ -24,16 +24,9 @@ interface FlowHandleProps {
     type: FlowHandleType;
     position?: FlowHandlePosition;
     color?: string;
+    label?: string;
     style?: CSSProperties;
 }
-
-const EDGE_LABELS: Record<string, string> = {
-    approved: 'Aprobado',
-    rejected: 'Rechazado',
-    observed: 'Observado',
-    true: 'Sí',
-    false: 'No',
-};
 
 export function FlowHandle({
     nodeId,
@@ -41,6 +34,7 @@ export function FlowHandle({
     type,
     position = 'right',
     color,
+    label,
     style,
 }: FlowHandleProps) {
     const registerHandle = useFlowStore(
@@ -75,6 +69,8 @@ export function FlowHandle({
             nodeId,
             type,
             position,
+            label,
+            color,
         });
 
         return () => {
@@ -85,6 +81,8 @@ export function FlowHandle({
         nodeId,
         type,
         position,
+        label,
+        color,
         registerHandle,
         unregisterHandle,
     ]);
@@ -215,11 +213,7 @@ export function FlowHandle({
             targetHandle: targetHandleId,
 
             type: 'bezier',
-
-            label:
-                sourceHandleId === 'output'
-                    ? undefined
-                    : EDGE_LABELS[sourceHandleId] ?? sourceHandleId,
+            label,
         });
 
         endConnection();
@@ -249,8 +243,8 @@ export function FlowHandle({
             data-node-id={nodeId}
             data-handle-id={id}
             aria-label={`${type === 'source' ? 'Salida' : 'Entrada'
-                } ${id}`}
-            title={`${type === 'source' ? 'Salida' : 'Entrada'}: ${id}`}
+                } ${label ?? id}`}
+            title={`${type === 'source' ? 'Salida' : 'Entrada'}: ${label ?? id}`}
             style={{
                 ...style,
                 backgroundColor: color,

@@ -30,6 +30,7 @@ export function ConditionNode({
                 id="true"
                 type="source"
                 position="right"
+                label="Sí"
                 color="#10b981"
                 style={{ top: '35%' }}
             />
@@ -39,6 +40,7 @@ export function ConditionNode({
                 id="false"
                 type="source"
                 position="right"
+                label="No"
                 color="#ef4444"
                 style={{ top: '65%' }}
             />

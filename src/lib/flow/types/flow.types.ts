@@ -62,23 +62,8 @@ export interface FlowConnection {
     end: FlowPosition;
 }
 
-export type FlowNodeType =
-    | 'start'
-    | 'task'
-    | 'approval'
-    | 'condition'
-    | 'end';
-
-export interface FlowNodeData {
+export interface FlowNodeData extends Record<string, unknown> {
     label: string;
-    code?: string;
-    description?: string;
-    assignee?: string;
-    allowApprove?: boolean;
-    allowReject?: boolean;
-    allowObserve?: boolean;
-    requireComment?: boolean;
-    timeoutHours?: number;
 }
 
 export type FlowHandleType = 'source' | 'target';
@@ -94,4 +79,6 @@ export interface FlowHandleDefinition {
     nodeId: string;
     type: FlowHandleType;
     position: FlowHandlePosition;
+    label?: string;
+    color?: string;
 }

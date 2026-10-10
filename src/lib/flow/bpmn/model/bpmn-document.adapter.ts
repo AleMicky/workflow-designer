@@ -1,6 +1,7 @@
 import type {
     FlowEdge,
     FlowNode,
+    FlowProcessMetadata,
     FlowViewport,
 } from '../../types/flow.types';
 import type {
@@ -15,13 +16,17 @@ const DEFAULT_NODE_HEIGHT = 70;
 
 export interface CreateBpmnDocumentOptions {
     process: Pick<BpmnProcessModel, 'id' | 'name'>
-        & Partial<Pick<BpmnProcessModel, 'targetNamespace' | 'documentation'>>;
+        & Partial<Pick<
+            BpmnProcessModel,
+            'targetNamespace' | 'documentation' | 'version' | 'executable'
+        >>;
     nodes: readonly FlowNode[];
     edges: readonly FlowEdge<BpmnSequenceFlowData>[];
     viewport: FlowViewport;
 }
 
 export interface BpmnFlowSnapshot {
+    process: FlowProcessMetadata;
     nodes: FlowNode[];
     edges: FlowEdge<BpmnSequenceFlowData>[];
     viewport: FlowViewport;
@@ -40,6 +45,8 @@ export function createBpmnDocumentFromFlow({
             name: process.name,
             targetNamespace: process.targetNamespace ?? 'urn:miky-flow:process',
             documentation: process.documentation,
+            version: process.version,
+            executable: process.executable,
             elements: nodes.map((node) => ({
                 id: node.id,
                 type: node.type,
@@ -89,6 +96,14 @@ export function createFlowSnapshotFromBpmnDocument(
     );
 
     return {
+        process: {
+            id: document.process.id,
+            name: document.process.name,
+            targetNamespace: document.process.targetNamespace,
+            documentation: document.process.documentation,
+            version: document.process.version,
+            executable: document.process.executable,
+        },
         nodes: document.process.elements.map((element) => ({
             id: element.id,
             type: element.type,

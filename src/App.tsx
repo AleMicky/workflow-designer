@@ -2,6 +2,8 @@ import { useEffect, useMemo } from 'react';
 
 import {
     BpmnPalette,
+    BpmnDocumentActions,
+    BpmnPropertiesPanel,
     FlowCanvas,
     bpmnElementRegistry,
     createBpmnDocumentFromFlow,
@@ -9,7 +11,6 @@ import {
     createStandardBpmnValidator,
     useFlowStore,
 } from './lib/flow';
-import { NodePropertiesPanel } from './lib/flow/components/panels/NodePropertiesPanel';
 
 const bpmnNodeTypes = createBpmnNodeTypes(bpmnElementRegistry);
 const bpmnValidator = createStandardBpmnValidator(bpmnElementRegistry);
@@ -17,23 +18,22 @@ const bpmnValidator = createStandardBpmnValidator(bpmnElementRegistry);
 export default function App() {
     const addNode = useFlowStore((state) => state.addNode);
     const addEdge = useFlowStore((state) => state.addEdge);
+    const process = useFlowStore((state) => state.process);
     const nodes = useFlowStore((state) => state.nodes);
     const edges = useFlowStore((state) => state.edges);
     const viewport = useFlowStore((state) => state.viewport);
+    const markSaved = useFlowStore((state) => state.markSaved);
 
     const validation = useMemo(() => {
         const document = createBpmnDocumentFromFlow({
-            process: {
-                id: 'process-1',
-                name: 'Proceso sin título',
-            },
+            process,
             nodes,
             edges,
             viewport,
         });
 
         return bpmnValidator.validate(document);
-    }, [edges, nodes, viewport]);
+    }, [edges, nodes, process, viewport]);
 
     useEffect(() => {
         const { nodes } = useFlowStore.getState();
@@ -78,7 +78,9 @@ export default function App() {
             targetHandle: 'input',
             type: 'bezier',
         });
-    }, [addEdge, addNode]);
+
+        markSaved();
+    }, [addEdge, addNode, markSaved]);
 
     return (
         <div className="miky-flow-app">
@@ -87,6 +89,8 @@ export default function App() {
                     <strong>Miky Flow</strong>
                     <span>Diseñador visual de procesos</span>
                 </div>
+
+                <BpmnDocumentActions registry={bpmnElementRegistry} />
 
                 <div className="miky-flow-header__status">
                     <span className="miky-flow-header__badge">
@@ -105,7 +109,11 @@ export default function App() {
                         {validation.valid
                             ? `Modelo válido${
                                 validation.warnings.length > 0
-                                    ? ` · ${validation.warnings.length} avisos`
+                                    ? ` · ${validation.warnings.length} ${
+                                        validation.warnings.length === 1
+                                            ? 'aviso'
+                                            : 'avisos'
+                                    }`
                                     : ''
                             }`
                             : `${validation.errors.length} errores`}
@@ -115,7 +123,7 @@ export default function App() {
 
             <FlowCanvas nodeTypes={bpmnNodeTypes} />
             <BpmnPalette registry={bpmnElementRegistry} />
-            <NodePropertiesPanel registry={bpmnElementRegistry} />
+            <BpmnPropertiesPanel registry={bpmnElementRegistry} />
         </div>
     );
 }

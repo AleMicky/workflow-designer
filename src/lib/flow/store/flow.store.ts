@@ -9,16 +9,24 @@ import type {
     FlowNodeData,
     FlowHandleDefinition,
     FlowHandleType,
+    FlowProcessMetadata,
     FlowStateSnapshot,
 } from '../types/flow.types';
 
 interface FlowState {
+    process: FlowProcessMetadata;
     nodes: FlowNode[];
     edges: FlowEdge[];
     viewport: FlowViewport;
+    isDirty: boolean;
 
     addNode: (node: FlowNode) => void;
     addEdge: (edge: FlowEdge) => void;
+    updateProcess: (changes: Partial<FlowProcessMetadata>) => void;
+    updateEdgeData: (
+        id: string,
+        data: Partial<Record<string, unknown>>,
+    ) => void;
 
     updateNodePosition: (
         id: string,
@@ -30,6 +38,7 @@ interface FlowState {
 
     setViewport: (viewport: FlowViewport) => void;
     replaceFlow: (snapshot: FlowStateSnapshot) => void;
+    markSaved: () => void;
 
     connection: FlowConnection | null;
 
@@ -39,6 +48,8 @@ interface FlowState {
 
     selectedNodeId: string | null;
     selectNode: (id: string | null) => void;
+    selectedEdgeId: string | null;
+    selectEdge: (id: string | null) => void;
 
     updateNodeData: (
         id: string,
@@ -63,6 +74,13 @@ const getHandleKey = (
 ): string => `${nodeId}:${type}:${handleId}`;
 
 export const useFlowStore = create<FlowState>((set) => ({
+    process: {
+        id: 'process-1',
+        name: 'Proceso sin título',
+        targetNamespace: 'urn:miky-flow:process',
+        version: '1.0',
+        executable: true,
+    },
     nodes: [],
     edges: [],
 
@@ -71,12 +89,23 @@ export const useFlowStore = create<FlowState>((set) => ({
         y: 0,
         zoom: 1,
     },
+    isDirty: false,
 
     // NODOS
 
     addNode: (node) =>
         set((state) => ({
             nodes: [...state.nodes, node],
+            isDirty: true,
+        })),
+
+    updateProcess: (changes) =>
+        set((state) => ({
+            process: {
+                ...state.process,
+                ...changes,
+            },
+            isDirty: true,
         })),
 
     updateNodePosition: (id, position) =>
@@ -86,6 +115,7 @@ export const useFlowStore = create<FlowState>((set) => ({
                     ? { ...node, position }
                     : node,
             ),
+            isDirty: true,
         })),
 
     removeNode: (id) =>
@@ -113,6 +143,15 @@ export const useFlowStore = create<FlowState>((set) => ({
                     state.selectedNodeId === id
                         ? null
                         : state.selectedNodeId,
+
+                selectedEdgeId: state.edges.some(
+                    (edge) =>
+                        edge.id === state.selectedEdgeId
+                        && (edge.source === id || edge.target === id),
+                )
+                    ? null
+                    : state.selectedEdgeId,
+                isDirty: true,
             };
         }),
 
@@ -153,6 +192,7 @@ export const useFlowStore = create<FlowState>((set) => ({
 
             return {
                 edges: [...state.edges, edge],
+                isDirty: true,
             };
         }),
 
@@ -161,14 +201,42 @@ export const useFlowStore = create<FlowState>((set) => ({
             edges: state.edges.filter(
                 (edge) => edge.id !== id,
             ),
+            selectedEdgeId:
+                state.selectedEdgeId === id
+                    ? null
+                    : state.selectedEdgeId,
+            isDirty: true,
+        })),
+
+    updateEdgeData: (id, changes) =>
+        set((state) => ({
+            edges: state.edges.map((edge) => {
+                if (edge.id !== id) return edge;
+
+                const data = {
+                    ...edge.data,
+                    ...changes,
+                };
+                const name = data.name;
+
+                return {
+                    ...edge,
+                    data,
+                    label:
+                        typeof name === 'string' && name.trim()
+                            ? name
+                            : undefined,
+                };
+            }),
+            isDirty: true,
         })),
 
     // VIEWPORT
 
     setViewport: (viewport) =>
-        set({ viewport }),
+        set({ viewport, isDirty: true }),
 
-    replaceFlow: ({ nodes, edges, viewport }) =>
+    replaceFlow: ({ process, nodes, edges, viewport }) =>
         set((state) => {
             const nodeIds = new Set(nodes.map((node) => node.id));
             const handles = Object.fromEntries(
@@ -178,14 +246,20 @@ export const useFlowStore = create<FlowState>((set) => ({
             );
 
             return {
+                process: { ...process },
                 nodes: [...nodes],
                 edges: [...edges],
                 viewport: { ...viewport },
                 connection: null,
                 selectedNodeId: null,
+                selectedEdgeId: null,
                 handles,
+                isDirty: true,
             };
         }),
+
+    markSaved: () =>
+        set({ isDirty: false }),
 
     // CONEXIÓN TEMPORAL
 
@@ -210,9 +284,19 @@ export const useFlowStore = create<FlowState>((set) => ({
     // SELECCIÓN
 
     selectedNodeId: null,
+    selectedEdgeId: null,
 
     selectNode: (id) =>
-        set({ selectedNodeId: id }),
+        set({
+            selectedNodeId: id,
+            selectedEdgeId: null,
+        }),
+
+    selectEdge: (id) =>
+        set({
+            selectedEdgeId: id,
+            selectedNodeId: null,
+        }),
 
     // PROPIEDADES
 
@@ -229,6 +313,7 @@ export const useFlowStore = create<FlowState>((set) => ({
                     }
                     : node,
             ),
+            isDirty: true,
         })),
 
     // HANDLES

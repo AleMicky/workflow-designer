@@ -81,6 +81,14 @@ const snapshot = createFlowSnapshotFromBpmnDocument(restoredDocument);
 `replaceFlow(snapshot)` permite cargar el resultado en el store sin mezclar la
 serialización BPMN con los componentes visuales.
 
+La barra superior permite crear un proceso, abrir un documento JSON y guardar
+el estado actual. Los cambios pendientes se identifican en la interfaz y el
+editor avisa antes de cerrar o reemplazar un proceso sin guardar.
+
+El panel derecho muestra las propiedades generales del proceso cuando no hay
+una selección. Al seleccionar un `sequenceFlow` permite configurar su nombre,
+expresión condicional y si representa la ruta predeterminada del gateway.
+
 ## Validación extensible
 
 ```ts

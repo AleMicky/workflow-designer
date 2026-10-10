@@ -58,6 +58,14 @@ export function FlowEdge({
         (state) => state.removeEdge,
     );
 
+    const selectedEdgeId = useFlowStore(
+        (state) => state.selectedEdgeId,
+    );
+
+    const selectEdge = useFlowStore(
+        (state) => state.selectEdge,
+    );
+
     // CALCULAR POSICIONES REALES
 
     useLayoutEffect(() => {
@@ -200,7 +208,12 @@ export function FlowEdge({
     return (
         <g
             ref={groupRef}
-            className="flow-edge"
+            className={[
+                'flow-edge',
+                selectedEdgeId === edge.id
+                    ? 'flow-edge--selected'
+                    : '',
+            ].filter(Boolean).join(' ')}
         >
             {/* ÁREA INTERACTIVA INVISIBLE */}
 
@@ -210,9 +223,22 @@ export function FlowEdge({
                 stroke="transparent"
                 strokeWidth={16}
                 className="flow-edge__hit-area"
-                onPointerDown={(event) =>
-                    event.stopPropagation()
-                }
+                role="button"
+                tabIndex={0}
+                aria-label={`Seleccionar conexión ${edge.label ?? edge.id}`}
+                onPointerDown={(event) => {
+                    event.stopPropagation();
+                    selectEdge(edge.id);
+                }}
+                onClick={(event) => {
+                    event.stopPropagation();
+                    selectEdge(edge.id);
+                }}
+                onKeyDown={(event) => {
+                    if (event.key !== 'Enter' && event.key !== ' ') return;
+                    event.preventDefault();
+                    selectEdge(edge.id);
+                }}
             />
 
             {/* LÍNEA VISIBLE */}

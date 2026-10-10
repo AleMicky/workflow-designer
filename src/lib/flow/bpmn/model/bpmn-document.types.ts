@@ -32,6 +32,8 @@ export interface BpmnProcessModel {
     name: string;
     targetNamespace: string;
     documentation?: string;
+    version?: string;
+    executable?: boolean;
     elements: BpmnElementInstance[];
     sequenceFlows: BpmnSequenceFlow[];
 }

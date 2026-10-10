@@ -8,6 +8,10 @@ export { FlowHandle } from './components/handles/FlowHandle';
 
 export { BpmnPalette } from './components/panels/BpmnPalette';
 
+export { BpmnDocumentActions } from './components/panels/BpmnDocumentActions';
+
+export { BpmnPropertiesPanel } from './components/panels/BpmnPropertiesPanel';
+
 export { useFlowStore } from './store/flow.store';
 
 export { useFlow } from './hooks/useFlow';
@@ -51,6 +55,7 @@ export type {
     FlowDefinition,
     FlowViewport,
     FlowPosition,
+    FlowProcessMetadata,
     FlowStateSnapshot,
 } from './types/flow.types';
 

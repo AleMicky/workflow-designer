@@ -51,7 +51,17 @@ export interface FlowViewport {
     zoom: number;
 }
 
+export interface FlowProcessMetadata {
+    id: string;
+    name: string;
+    targetNamespace: string;
+    documentation?: string;
+    version?: string;
+    executable?: boolean;
+}
+
 export interface FlowStateSnapshot {
+    process: FlowProcessMetadata;
     nodes: FlowNode[];
     edges: FlowEdge[];
     viewport: FlowViewport;

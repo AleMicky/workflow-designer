@@ -23,6 +23,9 @@ export function FlowCanvas({ nodeTypes = {} }: FlowCanvasProps) {
     const selectNode = useFlowStore(
         (state) => state.selectNode,
     );
+    const selectEdge = useFlowStore(
+        (state) => state.selectEdge,
+    );
 
     const canvasRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
@@ -36,6 +39,7 @@ export function FlowCanvas({ nodeTypes = {} }: FlowCanvasProps) {
     const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
 
         selectNode(null);
+        selectEdge(null);
 
         // Solo arrastrar el lienzo con botón izquierdo o central
         if (event.button !== 0 && event.button !== 1) return;

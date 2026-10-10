@@ -59,6 +59,20 @@ function assertDocumentV1(value: unknown): asserts value is BpmnDocumentV1 {
     assertString(process.name, 'process.name');
     assertString(process.targetNamespace, 'process.targetNamespace');
 
+    if (process.documentation !== undefined) {
+        assertString(process.documentation, 'process.documentation');
+    }
+
+    if (process.version !== undefined) {
+        assertString(process.version, 'process.version');
+    }
+
+    if (process.executable !== undefined && typeof process.executable !== 'boolean') {
+        throw new BpmnSerializationError(
+            'Expected a boolean at "process.executable".',
+        );
+    }
+
     if (!Array.isArray(process.elements)) {
         throw new BpmnSerializationError('Expected an array at "process.elements".');
     }

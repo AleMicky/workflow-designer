@@ -1,0 +1,524 @@
+.flow-canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #f8fafc;
+    background-image:
+            radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+    background-size: 20px 20px;
+    user-select: none;
+}
+
+.flow-viewport {
+    width: 100%;
+    height: 100%;
+}
+
+.flow-node {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 12px;
+
+    box-shadow: 0 4px 12px rgb(0 0 0 / 6%), 0 1px 3px rgb(0 0 0 / 4%);
+
+    user-select: none;
+    z-index: 2;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.flow-node:hover {
+    border-color: #2563eb;
+    box-shadow: 0 8px 20px rgb(37 99 235 / 12%), 0 2px 6px rgb(0 0 0 / 4%);
+}
+
+.flow-node--dragging {
+    z-index: 20;
+    box-shadow: 0 12px 28px rgb(37 99 235 / 22%), 0 4px 8px rgb(0 0 0 / 8%);
+    border-color: #2563eb;
+}
+
+/* Distinciones visuales según el tipo de nodo */
+.flow-node--start {
+    border-left: 5px solid #10b981;
+}
+
+.flow-node--task {
+    border-left: 5px solid #3b82f6;
+}
+
+.flow-node--approval {
+    border-left: 5px solid #f59e0b;
+}
+
+.flow-node--end {
+    border-left: 5px solid #ef4444;
+}
+
+.flow-node__content {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 12px;
+}
+
+.flow-node__delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    border: 2px solid #ffffff;
+    font-size: 13px;
+    line-height: 1;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.15s ease, transform 0.15s ease, background-color 0.15s ease;
+    z-index: 15;
+    padding: 0;
+}
+
+.flow-node:hover .flow-node__delete {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.flow-node__delete:hover {
+    background: #dc2626;
+    transform: scale(1.15);
+}
+
+.flow-edges {
+    z-index: 1;
+}
+
+.flow-handle {
+    position: absolute;
+
+    width: 14px;
+    height: 14px;
+
+    padding: 0;
+
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+
+    background: #2563eb;
+
+    cursor: crosshair;
+    z-index: 10;
+
+    touch-action: none;
+
+    transition:
+            background 0.15s ease,
+            box-shadow 0.15s ease,
+            transform 0.15s ease;
+}
+
+/* Área de interacción expandida invisible para facilitar apuntar y soltar */
+.flow-handle::after {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border-radius: 50%;
+}
+
+
+.flow-handle:hover {
+  box-shadow: 0 0 0 4px rgb(37 99 235 / 25%);
+}
+
+.flow-handle:focus-visible {
+    outline: 3px solid #1d4ed8;
+    outline-offset: 3px;
+}
+
+/* Barra flotante de controles de zoom */
+.flow-controls {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 8%);
+    z-index: 30;
+}
+
+.flow-control-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.flow-control-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.flow-control-btn:active {
+    background: #e2e8f0;
+}
+
+.flow-node--selected {
+  border-color: #2563eb;
+  box-shadow:
+    0 0 0 3px rgb(37 99 235 / 18%),
+    0 8px 20px rgb(0 0 0 / 8%);
+}
+
+.flow-properties {
+  position: absolute;
+  top: 90px;
+  right: 20px;
+  bottom: 24px;
+  width: 320px;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgb(0 0 0 / 8%);
+  overflow: hidden;
+}
+
+.flow-properties__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.flow-properties__header h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.flow-properties__header span {
+  font-size: 12px;
+  color: #64748b;
+  text-transform: capitalize;
+}
+
+.flow-properties__header button {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.flow-properties__body {
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.flow-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.flow-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.flow-field input,
+.flow-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+}
+
+.flow-field input:focus,
+.flow-field textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
+}
+
+.flow-properties__body h4 {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.flow-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.flow-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #334155;
+}
+
+.flow-checkbox input {
+  accent-color: #2563eb;
+}
+
+.flow-properties__info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+
+.flow-properties__info code {
+  overflow-wrap: anywhere;
+  color: #64748b;
+}
+
+.flow-properties__empty {
+  padding: 24px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.workflow-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  text-align: left;
+}
+
+.workflow-node__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.workflow-node > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.workflow-node strong {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.workflow-node small {
+  font-size: 11px;
+  font-weight: 400;
+  color: #64748b;
+  overflow-wrap: anywhere;
+}
+
+.workflow-node--start .workflow-node__icon {
+  color: #059669;
+  background: #d1fae5;
+}
+
+.workflow-node--task .workflow-node__icon {
+  color: #2563eb;
+  background: #dbeafe;
+}
+
+.workflow-node--approval .workflow-node__icon {
+  color: #d97706;
+  background: #fef3c7;
+}
+
+.workflow-node--condition .workflow-node__icon {
+  color: #7c3aed;
+  background: #ede9fe;
+}
+
+.workflow-node--end .workflow-node__icon {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+/* ========================================
+   HANDLES
+======================================== */
+
+.flow-handle {
+  position: absolute;
+
+  width: 14px;
+  height: 14px;
+
+  padding: 0;
+
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+
+  background: #2563eb;
+
+  cursor: crosshair;
+  z-index: 10;
+
+  touch-action: none;
+
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.flow-handle::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+}
+
+/* DERECHA */
+
+.flow-handle--right {
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* IZQUIERDA */
+
+.flow-handle--left {
+  left: -7px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ARRIBA */
+
+.flow-handle--top {
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ABAJO */
+
+.flow-handle--bottom {
+  bottom: -7px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* INTERACCIÓN */
+
+.flow-handle:hover {
+  box-shadow:
+    0 0 0 4px rgb(37 99 235 / 25%);
+}
+
+.flow-handle:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+
+/* ========================================
+   CONEXIONES
+======================================== */
+
+.flow-edges {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flow-edge {
+  pointer-events: none;
+}
+
+/* ÁREA INVISIBLE PARA DETECTAR EL CURSOR */
+
+.flow-edge__hit-area {
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+/* LÍNEA VISIBLE */
+
+.flow-edge__path {
+  transition: stroke 150ms ease;
+}
+
+/* CAMBIO DE COLOR AL PASAR EL CURSOR */
+
+.flow-edge:hover .flow-edge__path {
+  stroke: #2563eb;
+}
+
+/* BOTÓN ELIMINAR */
+
+.flow-edge__delete {
+  opacity: 0;
+
+  cursor: pointer;
+  pointer-events: all;
+
+  transition: opacity 150ms ease;
+}
+
+.flow-edge:hover .flow-edge__delete {
+  opacity: 1;
+}
+
+.flow-edge__delete:hover circle {
+  fill: #fee2e2;
+  stroke: #ef4444;
+}
